@@ -26,6 +26,11 @@ public class Character : MonoBehaviour
     #region Public Variables
     public float movementSpeed = 5.0f;
     public float rotationSpeed = 1000.0f;
+    private Vector3 m_gizmoStartPos;
+    private Vector3 m_gizmoEndPos;
+    private GameObject m_groundCheckStartObj;
+    private GameObject m_groundCheckEndObj;
+    private float m_groundCheckOffset = .1f;
     #endregion
 
     #region Unity Methods
@@ -34,12 +39,23 @@ public class Character : MonoBehaviour
     {
         InitializeComponents();
         InitializeInput();
+        InitializeGroundCheck();
     }
 
     // Update is called once per frame
     private void Update()
     {
         Input();
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawSphere(m_groundCheckStartObj.transform.position, m_groundCheckOffset);
+
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(m_groundCheckEndObj.transform.position, m_groundCheckOffset);
     }
     #endregion
 
@@ -80,6 +96,21 @@ public class Character : MonoBehaviour
 
         m_rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
     }
+
+    private void InitializeGroundCheck()
+    {
+        m_gizmoStartPos = m_collider.bounds.ClosestPoint(Vector3.down * 2) + new Vector3(0, m_groundCheckOffset, 0);
+        m_gizmoEndPos = m_gizmoStartPos - new Vector3(0, m_groundCheckOffset + m_groundCheckOffset, 0);
+        m_groundCheckStartObj = new GameObject("GroundCheck_START");
+        m_groundCheckStartObj.transform.position = m_gizmoStartPos;
+        m_groundCheckStartObj.transform.parent = transform;
+
+        m_groundCheckEndObj = new GameObject("GroundCheck_END");
+        m_groundCheckEndObj.transform.position = m_gizmoEndPos;
+        m_groundCheckEndObj.transform.parent = transform;
+
+    }
+
 
     private void Input()
     {
@@ -139,6 +170,7 @@ public class Character : MonoBehaviour
         }
 
         m_velocity = new Vector3(_h, 0, _v) * movementSpeed;
+        m_velocity.y = m_rigidbody.velocity.y;
         m_rigidbody.velocity = m_velocity;
     }
     #endregion
