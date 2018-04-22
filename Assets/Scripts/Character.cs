@@ -7,6 +7,7 @@ using System;
 [RequireComponent(typeof(VoxelAnimation))]
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(Collider))]
 public class Character : MonoBehaviour
 {
     #region Private Variables
@@ -15,6 +16,7 @@ public class Character : MonoBehaviour
 
     private Rigidbody m_rigidbody;
     private Animator m_animator;
+    private Collider m_collider;
 
     private Vector3 m_velocity = Vector3.zero;
 
@@ -23,6 +25,7 @@ public class Character : MonoBehaviour
 
     #region Public Variables
     public float movementSpeed = 5.0f;
+    public float rotationSpeed = 1000.0f;
     #endregion
 
     #region Unity Methods
@@ -46,6 +49,8 @@ public class Character : MonoBehaviour
         m_actions = new CharacterAction();
         m_actions.Left.AddDefaultBinding(InputControlType.DPadLeft);
         m_actions.Right.AddDefaultBinding(InputControlType.DPadRight);
+        m_actions.Down.AddDefaultBinding(InputControlType.DPadDown);
+        m_actions.Up.AddDefaultBinding(InputControlType.DPadUp);
         m_actions.Special.AddDefaultBinding(InputControlType.Action1);
 
         //analog stick
@@ -57,6 +62,12 @@ public class Character : MonoBehaviour
         //keyboard
         m_actions.Left.AddDefaultBinding(Key.LeftArrow);
         m_actions.Right.AddDefaultBinding(Key.RightArrow);
+        m_actions.Left.AddDefaultBinding(Key.A);
+        m_actions.Right.AddDefaultBinding(Key.D);
+        m_actions.Down.AddDefaultBinding(Key.DownArrow);
+        m_actions.Up.AddDefaultBinding(Key.UpArrow);
+        m_actions.Down.AddDefaultBinding(Key.S);
+        m_actions.Up.AddDefaultBinding(Key.W);
         m_actions.Special.AddDefaultBinding(Key.Z);
     }
 
@@ -65,9 +76,9 @@ public class Character : MonoBehaviour
         m_voxelAnimation = GetComponent<VoxelAnimation>();
         m_rigidbody = GetComponent<Rigidbody>();
         m_animator = GetComponent<Animator>();
+        m_collider = GetComponent<Collider>();
 
-        m_rigidbody.constraints = RigidbodyConstraints.FreezeRotationX;
-        m_rigidbody.constraints = RigidbodyConstraints.FreezeRotationZ;
+        m_rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
     }
 
     private void Input()
@@ -94,6 +105,13 @@ public class Character : MonoBehaviour
         else if (m_actions.Move.WasReleased == true)
         {
             m_isMoving = false;
+            m_voxelAnimation.Stop();
+        }
+
+        if (m_actions.Move.WasPressed == true)
+        {
+            m_isMoving = true;
+            m_voxelAnimation.Play();
         }
 
         m_animator.SetBool("IsMoving", m_isMoving);
@@ -102,7 +120,25 @@ public class Character : MonoBehaviour
 
     private void CheckIfMoving(Vector2 inputValue)
     {
-        m_velocity = inputValue * movementSpeed;
+        //horizontal movement
+        var _h = inputValue.x;
+
+        //vertical movement
+        var _v = inputValue.y;
+
+        //if the absolute values of horizontal and vertical movement is greater than zero
+        if (Mathf.Abs(_h) > 0 || Mathf.Abs(_v) > 0)
+        {
+            //set the rotation vector direction to face
+            var moveDir = new Vector3(_h, 0, _v);
+            //find the wanted rotation angle based on the rotation vector
+            Quaternion wanted_rotation = Quaternion.LookRotation(moveDir, Vector3.up);
+            //set the player's rotation to rotate towards the last inputed rotation vector direction
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, wanted_rotation,
+                rotationSpeed * Time.deltaTime);
+        }
+
+        m_velocity = new Vector3(_h, 0, _v) * movementSpeed;
         m_rigidbody.velocity = m_velocity;
     }
     #endregion
