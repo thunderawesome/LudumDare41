@@ -203,7 +203,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1359138393656146}
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 2, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4473087150117088}
@@ -629,7 +629,7 @@ MonoBehaviour:
   isPlaying: 0
   loop: 1
   pingPong: 0
-  playOnStart: 1
+  playOnStart: 0
   m_speed: 0.1
   m_currentFrame: 0
 --- !u!114 &114800227892556220
