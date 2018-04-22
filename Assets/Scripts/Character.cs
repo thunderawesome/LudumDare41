@@ -50,6 +50,8 @@ public class Character : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (m_groundCheckEndObj == null || m_groundCheckStartObj == null) return;
+
         Gizmos.color = Color.green;
         Gizmos.DrawSphere(m_groundCheckStartObj.transform.position, m_groundCheckOffset);
 
